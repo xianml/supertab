@@ -1,0 +1,14 @@
+# Example configuration file for sug CLI
+# Copy this to ~/.sug.yaml and customize as needed
+
+# AI provider to use (openai, anthropic, gemini, groq)
+# If not specified, will auto-detect based on available API keys
+provider: "openai"
+
+# Enable debug mode for troubleshooting
+debug: false
+
+# Default timeout for AI requests
+timeout: "30s"
+
+# Additional configuration can be added here as the tool evolves 
