@@ -20,7 +20,8 @@ var predictCmd = &cobra.Command{
 	Short: "Predict the next most likely command",
 	Long: `Predict the next most likely command based on command history and current context.
 This analyzes recent shell history and environmental context to suggest what you might want to run next.`,
-	RunE: runPredict,
+	RunE:         runPredict,
+	SilenceUsage: true, // Don't show usage on error
 }
 
 func init() {

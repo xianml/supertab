@@ -19,8 +19,9 @@ var completeCmd = &cobra.Command{
 	Short: "Complete a partial shell command",
 	Long: `Complete a partial shell command using AI.
 The input can be provided as an argument or via stdin.`,
-	Args: cobra.MaximumNArgs(1),
-	RunE: runComplete,
+	Args:         cobra.MaximumNArgs(1),
+	RunE:         runComplete,
+	SilenceUsage: true, // Don't show usage on error
 }
 
 func init() {
