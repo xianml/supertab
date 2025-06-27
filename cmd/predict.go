@@ -110,8 +110,22 @@ func runPredict(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get prediction: %w", err)
 	}
 
-	// Output the suggested command
-	fmt.Print(response.Content)
+	// For predict, we want the raw AI output without parsing
+	// The AI should return properly formatted response with + or = prefix
+	rawContent := response.Content
+
+	// Simple validation: ensure response starts with + or =
+	if len(rawContent) == 0 {
+		return fmt.Errorf("empty response from AI")
+	}
+
+	firstChar := rawContent[0]
+	if firstChar != '+' && firstChar != '=' {
+		return fmt.Errorf("invalid response format: must start with + or =")
+	}
+
+	// Output the AI response directly
+	fmt.Print(rawContent)
 
 	return nil
 }

@@ -18,6 +18,9 @@ RESPONSE FORMAT RULES:
 - For replacements: prefix with '=' (e.g., "=ls -la" to replace "list files")
 - For predictions: prefix with '+' (e.g., "+kubectl -n <namespace> logs -f <failed pod>" to debug a failed pod)
 
+Your response may only start with either a plus sign or an equal sign.
+Your response MAY NOT start with both! This means that your response IS NOT ALLOWED to start with '+=' or '=+'.
+
 CRITICAL REQUIREMENTS:
 - Your response MUST be a single line without newlines
 - Do not write any leading or trailing characters except if required for the completion to work

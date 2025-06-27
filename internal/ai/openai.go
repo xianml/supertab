@@ -60,7 +60,69 @@ func (c *OpenAIClient) Complete(ctx context.Context, req CompletionRequest) (*Re
 // Predict generates command predictions using OpenAI
 func (c *OpenAIClient) Predict(ctx context.Context, req PredictionRequest) (*Response, error) {
 	prompt := buildPredictionPrompt(req)
-	return c.makeRequest(ctx, prompt)
+
+	// For prediction, we want the raw AI response without parsing
+	rawContent, err := c.makeRawRequest(ctx, prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the raw content directly
+	return &Response{
+		Type:    TypePrediction,
+		Content: rawContent,
+	}, nil
+}
+
+// makeRawRequest sends a request to OpenAI API and returns raw response
+func (c *OpenAIClient) makeRawRequest(ctx context.Context, userPrompt string) (string, error) {
+	reqBody := openAIRequest{
+		Model: "gpt-4o-mini",
+		Messages: []message{
+			{Role: "system", Content: getSystemPrompt()},
+			{Role: "user", Content: userPrompt},
+		},
+	}
+
+	jsonData, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", c.config.BaseURL+"/v1/chat/completions", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.config.APIKey)
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	var apiResp openAIResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
+		return "", fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	if apiResp.Error != nil {
+		return "", fmt.Errorf("API error: %s", apiResp.Error.Message)
+	}
+
+	if len(apiResp.Choices) == 0 {
+		return "", fmt.Errorf("no choices in response")
+	}
+
+	// Return raw content without parsing
+	return strings.TrimSpace(apiResp.Choices[0].Message.Content), nil
 }
 
 // makeRequest sends a request to OpenAI API and processes the response
